@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>StreamingCommunity</title>
+
+    <!-- iOS PWA meta tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="StreamingCommunity">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    
+    <!-- Standard PWA meta tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0d1117">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="manifest" href="manifest.json">
+
+    <link rel="stylesheet" href="style.css">
+    <script src="hls.min.js"></script>
+</head>
+<body>
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+        <div class="header-top">
+            <div class="logo-wrap">
+                <img src="favicon.png" alt="Logo" class="app-header-logo">
+                <span class="logo-badge">STREAMING COMMUNITY</span>
+            </div>
+            <div class="header-actions">
+                <button id="btn-open-tv-remote" class="icon-action-btn remote-btn" title="Telecomando & Tastiera TV">
+                    <span class="pulse-dot"></span> 📺 TV
+                </button>
+                <button id="btn-open-settings" class="icon-action-btn" title="Impostazioni Mirror">⚙</button>
+                <button id="btn-reload" class="icon-action-btn" title="Ricarica">🔄</button>
+            </div>
+        </div>
+
+        <!-- Search Bar with Live TV Keyboard Sync -->
+        <div class="search-section-wrap">
+            <div class="search-bar-wrap">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="search-input" class="search-input" placeholder="Cerca film o serie TV (digitando sulla TV)..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                <button id="btn-search-clear" class="search-clear-btn hidden">✕</button>
+                <button id="btn-search-submit" class="search-submit-btn">Cerca</button>
+            </div>
+            <div id="tv-typing-indicator" class="tv-typing-indicator">
+                <span class="tv-dot"></span> ⌨️ <strong>Tastiera TV attiva:</strong> ciò che scrivi compare subito sulla Smart TV
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-path="/it">🏠 In Evidenza</button>
+            <button class="nav-tab" data-path="/it/browse/trending">🔥 Trending</button>
+            <button class="nav-tab" data-path="/it/movies">🎬 Film</button>
+        </nav>
+    </header>
+
+    <!-- Main Content Container -->
+    <main id="app-viewport" class="app-viewport">
+        <!-- Hero Banner -->
+        <section id="hero-banner" class="hero-banner">
+            <div class="hero-bg-wrap">
+                <img id="hero-img" class="hero-img" src="" alt="Hero">
+                <div class="hero-gradient"></div>
+            </div>
+            <div class="hero-info">
+                <span id="hero-type-badge" class="hero-badge">SERIE TV</span>
+                <h1 id="hero-title" class="hero-title">Caricamento...</h1>
+                <p id="hero-plot" class="hero-plot"></p>
+                <div class="hero-btns">
+                    <button id="hero-play-btn" class="btn-primary">▶ Guarda Ora</button>
+                    <button id="hero-info-btn" class="btn-secondary">ℹ Dettagli</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dynamic Sections (Continua a Guardare, Novità, Tendenze, ecc.) -->
+        <section id="catalog-sections" class="catalog-sections">
+            <!-- Populated dynamically -->
+        </section>
+    </main>
+
+    <!-- Title Details & Episode Selector Modal -->
+    <div id="title-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <button id="btn-close-modal" class="modal-close-btn">✕</button>
+            <div class="modal-header-info">
+                <img id="modal-poster" class="modal-poster" src="" alt="Poster">
+                <div class="modal-meta">
+                    <h2 id="modal-title" class="modal-title">Titolo</h2>
+                    <div class="modal-badges">
+                        <span id="modal-year" class="meta-tag">2024</span>
+                        <span id="modal-score" class="meta-tag score">★ 8.5</span>
+                        <span id="modal-type" class="meta-tag">SERIE TV</span>
+                    </div>
+                    <p id="modal-plot" class="modal-plot">Trama...</p>
+                    <div class="modal-actions">
+                        <button id="modal-play-main-btn" class="btn-primary">▶ Riproduci</button>
+                        <button id="modal-send-tv-btn" class="btn-secondary" style="background:#21262d; border-color:#30363d;">📺 Apri su TV</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seasons & Episodes -->
+            <div id="seasons-container" class="seasons-container hidden">
+                <div class="seasons-tabs-row" id="seasons-tabs"></div>
+                <div class="episodes-grid" id="episodes-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Player Modal -->
+    <div id="player-modal" class="player-modal hidden">
+        <video id="app-video-player" class="app-video-player" playsinline preload="auto" controls></video>
+        <button id="btn-close-player" class="player-close-btn">✕ Chiudi Video</button>
+    </div>
+
+    <!-- Samsung TV Remote & Live Keyboard Modal -->
+    <div id="remote-modal" class="modal-overlay hidden">
+        <div class="settings-card remote-card">
+            <div class="settings-header">
+                <h2>📺 Telecomando & Tastiera Samsung TV</h2>
+                <button id="btn-close-remote" class="modal-close-btn" style="position:static;">✕</button>
+            </div>
+            <p class="settings-desc">Digita qui sotto: ogni lettera verrà digitata <strong>all'istante</strong> nella barra di ricerca della TV.</p>
+            
+            <div class="remote-input-wrap">
+                <input type="text" id="remote-typing-input" class="settings-input" placeholder="Scrivi qui per digitare sulla TV..." autocomplete="off">
+                <div class="remote-input-btns">
+                    <button id="btn-remote-send-search" class="btn-primary" style="padding:10px 14px;">🔍 Invia Ricerca</button>
+                    <button id="btn-remote-clear-search" class="btn-secondary" style="padding:10px 14px;">✕ Cancella TV</button>
+                </div>
+            </div>
+
+            <!-- Quick Search Suggestions for TV -->
+            <div class="quick-tags-section">
+                <span class="quick-tags-title">Ricerche Rapide per la TV:</span>
+                <div class="quick-tags-wrap">
+                    <button class="quick-tag-btn">Matrix</button>
+                    <button class="quick-tag-btn">Mare Fuori</button>
+                    <button class="quick-tag-btn">Fallout</button>
+                    <button class="quick-tag-btn">Harry Potter</button>
+                    <button class="quick-tag-btn">Il Gladiatore</button>
+                    <button class="quick-tag-btn">Breaking Bad</button>
+                    <button class="quick-tag-btn">Gomorra</button>
+                    <button class="quick-tag-btn">Dune</button>
+                    <button class="quick-tag-btn">Interstellar</button>
+                    <button class="quick-tag-btn">Suburra</button>
+                    <button class="quick-tag-btn">Squid Game</button>
+                </div>
+            </div>
+
+            <!-- TV Remote D-Pad Navigation Buttons -->
+            <div class="tv-dpad-section">
+                <span class="quick-tags-title">Controllo Navigazione TV:</span>
+                <div class="dpad-grid">
+                    <button class="dpad-btn dpad-up" data-cmd="up">▲ Su</button>
+                    <button class="dpad-btn dpad-left" data-cmd="left">◀ Sinistra</button>
+                    <button class="dpad-btn dpad-ok" data-cmd="ok">OK</button>
+                    <button class="dpad-btn dpad-right" data-cmd="right">Destra ▶</button>
+                    <button class="dpad-btn dpad-down" data-cmd="down">▼ Giù</button>
+                </div>
+                <div class="remote-actions-row">
+                    <button class="remote-cmd-btn" data-cmd="back">↩ Indietro</button>
+                    <button class="remote-cmd-btn" data-cmd="playpause">⏯ Play/Pausa</button>
+                    <button class="remote-cmd-btn" data-cmd="home">🏠 Home</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings / Samsung TV Sync Manager Modal -->
+    <div id="settings-modal" class="modal-overlay hidden">
+        <div class="settings-card">
+            <div class="settings-header">
+                <h2>📡 Sincronizzazione Smart TV Samsung</h2>
+                <button id="btn-close-settings" class="modal-close-btn" style="position:static;">✕</button>
+            </div>
+            <p class="settings-desc">Inserisci il nuovo indirizzo di StreamingCommunity. Verrà salvato su questa PWA e <strong>inviato istantaneamente alla tua Smart TV Samsung (QE65Q70R)</strong>:</p>
+            
+            <div class="settings-input-wrap">
+                <label>Nuovo Dominio StreamingCommunity:</label>
+                <input type="text" id="settings-url-input" class="settings-input" value="https://streamingcommunityz.taxi" placeholder="https://streamingcommunity...">
+            </div>
+
+            <div class="settings-presets">
+                <span class="preset-label">Mirror Rapidi:</span>
+                <button class="preset-btn" data-url="https://streamingcommunityz.taxi">.taxi</button>
+                <button class="preset-btn" data-url="https://streamingcommunity.buzz">.buzz</button>
+                <button class="preset-btn" data-url="https://streamingcommunity.vip">.vip</button>
+                <button class="preset-btn" data-url="https://streamingcommunity.my">.my</button>
+            </div>
+
+            <div class="settings-actions" style="display:flex; flex-direction:column; gap:10px; margin-top:16px;">
+                <button id="btn-sync-tv-action" class="btn-primary" style="background:#e50914; font-size:16px; font-weight:bold; padding:12px;">🚀 INVIA E AGGIORNA LA TV ORA</button>
+                <button id="btn-save-settings" class="btn-secondary" style="font-size:14px; padding:10px;">💾 Salva Solo su PWA</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <div id="loading-text" class="loading-text">Caricamento...</div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="app-toast" class="app-toast"></div>
+
+    <script src="app.js"></script>
+    <script>
+        // Register Service Worker for iOS / Android PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('[PWA] Service Worker registered:', reg.scope))
+                    .catch(err => console.warn('[PWA] Service Worker registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>

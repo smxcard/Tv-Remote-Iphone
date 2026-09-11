@@ -1,0 +1,25 @@
+{
+  "name": "StreamingCommunity",
+  "short_name": "StreamingCommunity",
+  "description": "StreamingCommunity Web App con Telecomando e Tastiera Live per Samsung Smart TV",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0d1117",
+  "theme_color": "#e50914",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
